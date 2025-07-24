@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\JournalResource\Pages;
 use App\Filament\Resources\JournalResource\RelationManagers;
 use App\Models\Journal;
+use App\Models\ArticleRepository;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,6 +22,10 @@ use Filament\Tables\Columns\Layout\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Checkbox;
+
+// crawler
+use App\Observers\ArticleRepositoryObserver;
+use Spatie\Crawler\Crawler;
 
 class JournalResource extends Resource
 {
@@ -46,8 +51,8 @@ class JournalResource extends Resource
                         Checkbox::make('bpress')
                             ->label('BPress')
                             ->inline(),
-                        Checkbox::make('eprint')
-                            ->label('EPrint')
+                        Checkbox::make('dspace')
+                            ->label('Dspace')
                             ->inline(),
                     ]),
             ]);
@@ -60,19 +65,56 @@ class JournalResource extends Resource
                 TextColumn::make('name')
                     ->label('Journal Name'),
                 TextColumn::make('oai_path')
-                    ->label('OAI Path'),
+                    ->label('OAI Path')
+                    ->limit(50),
                 TextColumn::make('max_list_record')
                     ->label('Maximum List Record'),
                 CheckboxColumn::make('bpress')
                     ->label('BPress'),
-                CheckboxColumn::make('eprint')
-                    ->label('EPrint'),
+                CheckboxColumn::make('dspace')
+                    ->label('Dspace'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('recrawl')
+                    ->color('gray')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(function (Journal $record) {
+                        $path = $record->oai_path;
+                        $limit = $record->max_list_record;
+
+                        $observer = new ArticleRepositoryObserver();
+                        $observer->setLimit($limit);
+                        
+                        $agent = request()->header('User-Agent');
+
+                        Crawler::create()
+                            ->setCrawlObserver($observer)
+                            ->setUserAgent($agent)
+                            ->startCrawling($path);
+
+                        // $xml = $observer->results;
+                        foreach ($observer->results as $data) {
+                            $identifiers = $data->identifier;
+                            $url = is_string($identifiers)
+                                ? $identifiers
+                                : current(array_filter($identifiers, fn($v) => is_string($v) && str_starts_with($v, 'https:')));
+
+                            // Journal::createOrUpdate([
+
+                            // ]);
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Data crawled successfully')
+                            ->body("Total data crawled: ".count($observer->results))
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
