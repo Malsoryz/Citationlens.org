@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('oai_path');
             $table->integer('max_list_record');
             $table->boolean('bpress'); // indeks
-            $table->boolean('eprint'); // indeks
+            $table->boolean('dspace'); // indeks
             $table->timestamps();
         });
     }
