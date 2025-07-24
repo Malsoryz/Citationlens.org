@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use App\Observers\ArticleRepositoryObserver;
 use Spatie\Crawler\Crawler;
 
@@ -22,5 +21,7 @@ Route::get('/test', function () {
 
     $xml = $observer->results;
 
-    return $xml;
+    $json = json_encode($xml[1], JSON_PRETTY_PRINT);
+
+    return response($json);
 });
