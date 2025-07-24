@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ArticleRepositoryResource\Pages;
-use App\Filament\Resources\ArticleRepositoryResource\RelationManagers;
-use App\Models\ArticleRepository;
+use App\Filament\Resources\JournalResource\Pages;
+use App\Filament\Resources\JournalResource\RelationManagers;
 use App\Models\Journal;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -23,7 +22,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Checkbox;
 
-class ArticleRepositoryResource extends Resource
+class JournalResource extends Resource
 {
     protected static ?string $model = Journal::class;
 
@@ -92,9 +91,9 @@ class ArticleRepositoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListArticleRepositories::route('/'),
-            // 'create' => Pages\CreateArticleRepository::route('/create'),
-            // 'edit' => Pages\EditArticleRepository::route('/{record}/edit'),
+            'index' => Pages\ListJournals::route('/'),
+            // 'create' => Pages\CreateJournal::route('/create'),
+            // 'edit' => Pages\EditJournal::route('/{record}/edit'),
         ];
     }
 }
