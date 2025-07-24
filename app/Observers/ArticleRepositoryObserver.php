@@ -11,6 +11,7 @@ class ArticleRepositoryObserver extends CrawlObserver
 {
     public array $results = [];
 
+    // batasan untuk data yang akan di dapatkan dari records dalam bentuk array
     public ?int $limit = null;
 
     public function setLimit(?int $limit): void
@@ -24,7 +25,7 @@ class ArticleRepositoryObserver extends CrawlObserver
         ?UriInterface $foundOnUrl = null,
         ?string $linkText = null,
     ): void {
-        echo "Crawled: " . $url . PHP_EOL;
+        logger("Crawled: " . $url . PHP_EOL);
         $xml = new \SimpleXMLElement($response->getBody());
 
         $xml->registerXPathNamespace('oai', 'http://www.openarchives.org/OAI/2.0/');
@@ -50,19 +51,24 @@ class ArticleRepositoryObserver extends CrawlObserver
             $source = $recordXml->xpath('.//dc:source');
             $language = $recordXml->xpath('.//dc:language');
             $relation = $recordXml->xpath('.//dc:relation');
+
+            $normalize = function ($value) {
+                $value = array_map('strval', $value);
+                return count($value) === 1 ? current($value) : $value;
+            };
         
-            $this->results[] = [
-                'title' => array_map('strval', $titles),
-                'creator' => array_map('strval', $creators),
-                'description' => array_map('strval', $description),
-                'publisher' => array_map('strval', $publisher),
-                'date' => array_map('strval', $date),
-                'type' => array_map('strval', $type),
-                'format' => array_map('strval', $format),
-                'identifier' => array_map('strval', $identifiers),
-                'source' => array_map('strval', $source),
-                'language' => array_map('strval', $language),
-                'relation' => array_map('strval', $relation),
+            $this->results[] = (object) [
+                'title' => $normalize($titles),
+                'creator' => $normalize($creators),
+                'description' => $normalize($description),
+                'publisher' => $normalize($publisher),
+                'date' => $normalize($date),
+                'type' => $normalize($type),
+                'format' => $normalize($format),
+                'identifier' => $normalize($identifiers),
+                'source' => $normalize($source),
+                'language' => $normalize($language),
+                'relation' => $normalize($relation),
             ];
         }
     }
@@ -73,18 +79,18 @@ class ArticleRepositoryObserver extends CrawlObserver
         ?UriInterface $foundOnUrl = null,
         ?string $linkText = null,
     ): void {
-        echo "Failed to crawl: " . $url . " - Error: " . $requestException->getMessage() . PHP_EOL;
+        logger("Failed to crawl: " . $url . " - Error: " . $requestException->getMessage() . PHP_EOL);
     }
 
     public function willCrawl(UriInterface $url, ?string $linkText): void
     {
         parent::willCrawl($url, $linkText);
-        echo "Will crawl: " . $url . PHP_EOL;
+        logger("Will crawl: " . $url . PHP_EOL);
     }
 
     public function finishedCrawling(): void
     {
         parent::finishedCrawling();
-        echo "Crawl selesai. Jumlah hasil: " . count($this->results) . PHP_EOL;
+        logger("Crawl selesai. Jumlah hasil: " . count($this->results) . PHP_EOL);
     }
 }
