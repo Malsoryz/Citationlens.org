@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Journal;
 use Illuminate\Database\Eloquent\Model;
 
 class ArticleRepository extends Model
@@ -10,4 +11,9 @@ class ArticleRepository extends Model
         'url',
         'meta',
     ];
+
+    public function journal()
+    {
+        return $this->belongsTo(Journal::class);
+    }
 }

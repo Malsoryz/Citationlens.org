@@ -13,8 +13,14 @@ return new class extends Migration
     {
         Schema::create('article_repositories', function (Blueprint $table) {
             $table->id();
-            $table->string('url');
+            $table->string('url')->unique();
             $table->json('meta');
+            $table->unsignedBigInteger('journal_id');
+            $table->foreign('journal_id')
+                ->references('id')
+                ->on('journals')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->timestamps();
         });
     }
